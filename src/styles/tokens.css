@@ -1,0 +1,209 @@
+@theme {
+  /* ═══════════════════════════════════════════════════════
+     BRAND PALETTE
+     Primary   → Gold        (softball + "Fastpitch" wordmark)
+     Secondary → Navy        (magnifying glass + "Finder" wordmark)
+     Tertiary  → Columbia Blue (light sky blue complement)
+     ═══════════════════════════════════════════════════════ */
+
+  /* ── Primary: Gold ───────────────────────────────────── */
+  --color-primary-50:  #fffce8;
+  --color-primary-100: #fff8c4;
+  --color-primary-200: #ffee80;
+  --color-primary-300: #ffe040;
+  --color-primary-400: #f5b800;  /* ← bright display gold, logo match   */
+  --color-primary-500: #d99c00;  /* ← main interactive gold              */
+  --color-primary-600: #b47e00;  /* ← dark gold — readable on white      */
+  --color-primary-700: #8f6100;
+  --color-primary-800: #6b4800;
+  --color-primary-900: #4f3500;
+  --color-primary-950: #2e1e00;
+
+  /* ── Secondary: Navy ─────────────────────────────────── */
+  --color-navy-50:  #f0f4fb;
+  --color-navy-100: #d8e3f4;
+  --color-navy-200: #b5c8ea;
+  --color-navy-300: #84a4d8;
+  --color-navy-400: #537fc3;
+  --color-navy-500: #3360ad;
+  --color-navy-600: #254d90;
+  --color-navy-700: #1a3a72;  /* ← main navy — logo match               */
+  --color-navy-800: #132d58;
+  --color-navy-900: #0d1f3f;
+  --color-navy-950: #071428;
+
+  /* ── Tertiary: Columbia Blue ─────────────────────────── */
+  --color-columbia-50:  #f0f9ff;
+  --color-columbia-100: #ddf0fd;
+  --color-columbia-200: #b9e0fb;
+  --color-columbia-300: #8bc8f7;  /* ← classic columbia blue shade        */
+  --color-columbia-400: #56aaf0;
+  --color-columbia-500: #2d8ee6;
+  --color-columbia-600: #1f73cc;
+  --color-columbia-700: #1959a6;
+  --color-columbia-800: #154681;
+  --color-columbia-900: #133668;
+  --color-columbia-950: #0d2245;
+
+  /* ── Silver: Cool Gray (UI chrome + page background) ─── */
+  --color-silver-50:  #f8fafc;
+  --color-silver-100: #f1f5f9;  /* ← page background                     */
+  --color-silver-200: #e2e8f0;
+  --color-silver-300: #cbd5e1;
+  --color-silver-400: #94a3b8;
+  --color-silver-500: #64748b;
+  --color-silver-600: #475569;
+  --color-silver-700: #334155;
+  --color-silver-800: #1e293b;
+  --color-silver-900: #0f172a;
+  --color-silver-950: #020617;
+
+  /* ── Neutral: Warm Gray (text + subtle UI) ───────────── */
+  --color-neutral-50:  #fafafa;
+  --color-neutral-100: #f5f5f5;
+  --color-neutral-200: #e5e5e5;
+  --color-neutral-300: #d4d4d4;
+  --color-neutral-400: #a3a3a3;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #525252;
+  --color-neutral-700: #404040;
+  --color-neutral-800: #262626;
+  --color-neutral-900: #171717;
+  --color-neutral-950: #0a0a0a;
+
+  /* ── Semantic: Success – Emerald ─────────────────────── */
+  --color-success-50:  #ecfdf5;
+  --color-success-100: #d1fae5;
+  --color-success-200: #a7f3d0;
+  --color-success-500: #10b981;
+  --color-success-600: #059669;
+  --color-success-700: #047857;
+  --color-success-900: #064e3b;
+
+  /* ── Semantic: Warning – Amber ───────────────────────── */
+  --color-warning-50:  #fffbeb;
+  --color-warning-100: #fef3c7;
+  --color-warning-200: #fde68a;
+  --color-warning-500: #f59e0b;
+  --color-warning-600: #d97706;
+  --color-warning-700: #b45309;
+  --color-warning-900: #78350f;
+
+  /* ── Semantic: Error – Coral Red ─────────────────────── */
+  --color-error-50:  #fff1f0;
+  --color-error-100: #ffd7d4;
+  --color-error-200: #ffb3ae;
+  --color-error-500: #e53935;
+  --color-error-600: #c62828;
+  --color-error-700: #b71c1c;
+  --color-error-900: #7f0000;
+
+  /* ── Semantic: Info – Columbia Blue aliases ───────────── */
+  --color-info-50:  #f0f9ff;
+  --color-info-100: #ddf0fd;
+  --color-info-500: #2d8ee6;
+  --color-info-600: #1f73cc;
+  --color-info-700: #1959a6;
+  --color-info-900: #133668;
+
+  /* ── Surfaces ────────────────────────────────────────── */
+  --color-surface:         #ffffff;
+  --color-surface-raised:  #fafaf9;
+  --color-surface-overlay: #f1f5f9;  /* silver-100 — page background */
+  --color-surface-inverse: #1a3a72;  /* navy-700 — dark panels        */
+
+  /* ── Spacing ─────────────────────────────────────────── */
+  --spacing: 0.25rem;
+  --spacing-page-gutter: 1.5rem;
+  --spacing-section:     5rem;
+  --spacing-card-pad:    1.5rem;
+
+  /* ── Typography: Fonts ───────────────────────────────── */
+  --font-sans:    var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono:    var(--font-geist-mono), ui-monospace, "Cascadia Code", monospace;
+
+  /* ── Typography: Scale ───────────────────────────────── */
+  --text-2xs:  0.625rem;
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-lg:   1.125rem;
+  --text-xl:   1.25rem;
+  --text-2xl:  1.5rem;
+  --text-3xl:  1.875rem;
+  --text-4xl:  2.25rem;
+  --text-5xl:  3rem;
+  --text-6xl:  3.75rem;
+  --text-7xl:  4.5rem;
+
+  /* ── Typography: Weights ─────────────────────────────── */
+  --font-weight-light:     300;
+  --font-weight-normal:    400;
+  --font-weight-medium:    500;
+  --font-weight-semibold:  600;
+  --font-weight-bold:      700;
+  --font-weight-extrabold: 800;
+  --font-weight-black:     900;
+
+  /* ── Typography: Line heights ────────────────────────── */
+  --leading-none:    1;
+  --leading-tight:   1.25;
+  --leading-snug:    1.375;
+  --leading-normal:  1.5;
+  --leading-relaxed: 1.625;
+  --leading-loose:   2;
+
+  /* ── Typography: Letter spacing ──────────────────────── */
+  --tracking-tighter: -0.05em;
+  --tracking-tight:   -0.025em;
+  --tracking-normal:   0em;
+  --tracking-wide:     0.025em;
+  --tracking-wider:    0.05em;
+  --tracking-widest:   0.1em;
+
+  /* ── Border radius ───────────────────────────────────── */
+  --radius-none: 0px;
+  --radius-sm:   0.25rem;
+  --radius-md:   0.375rem;
+  --radius-lg:   0.5rem;
+  --radius-xl:   0.75rem;
+  --radius-2xl:  1rem;
+  --radius-3xl:  1.5rem;
+  --radius-full: 9999px;
+
+  /* ── Shadows ─────────────────────────────────────────── */
+  --shadow-xs:    0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-sm:    0 1px 3px 0 rgb(0 0 0 / 0.08), 0 1px 2px -1px rgb(0 0 0 / 0.06);
+  --shadow-md:    0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.06);
+  --shadow-lg:    0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -4px rgb(0 0 0 / 0.06);
+  --shadow-xl:    0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.08);
+  --shadow-2xl:   0 25px 50px -12px rgb(0 0 0 / 0.2);
+  --shadow-inner: inset 0 2px 4px 0 rgb(0 0 0 / 0.06);
+
+  /* ── Breakpoints ─────────────────────────────────────── */
+  --breakpoint-sm:  640px;
+  --breakpoint-md:  768px;
+  --breakpoint-lg:  1024px;
+  --breakpoint-xl:  1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* ── Z-index ─────────────────────────────────────────── */
+  --z-base:     0;
+  --z-raised:   10;
+  --z-dropdown: 100;
+  --z-sticky:   200;
+  --z-overlay:  300;
+  --z-modal:    400;
+  --z-toast:    500;
+
+  /* ── Transitions ─────────────────────────────────────── */
+  --duration-fast:   100ms;
+  --duration-base:   150ms;
+  --duration-slow:   300ms;
+  --duration-slower: 500ms;
+  --ease-default:    cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-in:         cubic-bezier(0.4, 0, 1, 1);
+  --ease-out:        cubic-bezier(0, 0, 0.2, 1);
+  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+}
