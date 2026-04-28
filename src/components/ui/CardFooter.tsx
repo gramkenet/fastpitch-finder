@@ -37,7 +37,9 @@ export default function CardFooter({ location, directorName, ageGroups, eventId 
     setLoading(true)
     setError(false)
     try {
-      const res = await fetch(`/api/teams?eventId=${eventId}`)
+      const res = await fetch(
+        `https://sportsvc.usssa.com/api/Event/teamsSummaryLwc?eventId=${eventId}`
+      )
       if (!res.ok) throw new Error()
       setDivisions(await res.json())
     } catch {
