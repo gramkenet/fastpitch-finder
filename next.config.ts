@@ -1,11 +1,16 @@
 import type { NextConfig } from "next";
 
+// Set by the workflow from actions/configure-pages outputs.base_path.
+// Empty string (default) = custom domain or local dev — no prefix needed.
+const basePath = process.env.BASE_PATH ?? ''
+
 const nextConfig: NextConfig = {
   output: 'export',
   trailingSlash: true,
-  // basePath / assetPrefix are injected at CI time by actions/configure-pages
+  basePath,
+  assetPrefix: basePath || undefined,
   images: {
-    unoptimized: true, // required for static export; also injected by configure-pages
+    unoptimized: true,
     remotePatterns: [
       { protocol: 'https', hostname: 'dc.usssa.com', pathname: '/api/uploads/**' },
       { protocol: 'https', hostname: 'mofastpitch.usssa.com', pathname: '/wp-content/**' },
