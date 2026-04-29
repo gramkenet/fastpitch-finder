@@ -4,11 +4,12 @@ import SearchInput from './SearchInput'
 
 interface Props {
   filteredCount: number
+  hasActiveFilters: boolean
   selectedSearch: string
   searchBase: string
 }
 
-export default function HomeHero({ filteredCount, selectedSearch, searchBase }: Props) {
+export default function HomeHero({ filteredCount, hasActiveFilters, selectedSearch, searchBase }: Props) {
   return (
     <section
       id="page-hero"
@@ -25,7 +26,11 @@ export default function HomeHero({ filteredCount, selectedSearch, searchBase }: 
             <p className="text-label-lg text-primary-400 mb-2">Upcoming Events</p>
             <h1 className="text-display-md text-white mb-1.5">Find Your Next Tournament</h1>
             <p className="text-body-md text-navy-300 min-h-[1.5rem]">
-              {filteredCount > 0 ? `${filteredCount} events available` : ''}
+              {!hasActiveFilters
+                ? 'Select a filter to find events near you.'
+                : filteredCount > 0
+                  ? `${filteredCount} events found`
+                  : ''}
             </p>
           </div>
           <div className="shrink-0">

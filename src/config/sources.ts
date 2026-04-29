@@ -28,9 +28,8 @@ export const EVENT_SOURCES: EventSourceConfig[] = [
     api: {
       endpoint: SCORI_API,
       sportId: 16, // Fastpitch
-      // USSSA region 690 = Missouri; including IL since MO directors frequently
-      // host events across the border (e.g. Edwardsville, East St. Louis).
-      states: ['MO', 'IL'],
+      // Empty = no state restriction; all states returned by the API are included.
+      states: [],
     },
   },
 ]

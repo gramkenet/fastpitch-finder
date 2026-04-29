@@ -20,20 +20,18 @@ function ageFromDivisionName(name: string): number | null {
 }
 
 interface Props {
-  location: string
-  directorName: string | null
+  href: string
   ageGroups: AgeGroup[]
-  eventId?: number    // USSSA numeric event ID
-  tmvpId?: number     // TournamentMVP tournament ID
+  eventId?: number
+  tmvpId?: number
 }
 
-export default function CardFooter({ location, directorName, ageGroups, eventId, tmvpId }: Props) {
+export default function CardFooter({ href, ageGroups, eventId, tmvpId }: Props) {
+  const [expanded, setExpanded] = useState(false)
   const [activeAge, setActiveAge] = useState<string | null>(null)
   const [divisions, setDivisions] = useState<ParsedDivision[] | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
-
-  const canExpand = eventId !== undefined || tmvpId !== undefined
 
   async function selectAge(label: string) {
     if (activeAge === label) {
@@ -77,36 +75,37 @@ export default function CardFooter({ location, directorName, ageGroups, eventId,
     (div) => ageFromDivisionName(div.divisionName) === activeAgeNum
   )
 
-  if (!location && !directorName && ageGroups.length === 0) return null
-
   return (
-    <div className="flex flex-col gap-2 mt-auto">
-      {/* Footer row: location · director (left) | age tab buttons (right) */}
-      <div className="flex items-end justify-between gap-4 flex-wrap">
-        {(location || directorName) && (
-          <div className="flex items-center gap-2 text-body-sm text-neutral-500 flex-wrap">
-            {location && (
-              <span className="flex items-center gap-1">
-                <LocationIcon className="shrink-0" />
-                {location}
-              </span>
-            )}
-            {location && directorName && (
-              <span className="text-neutral-300 select-none" aria-hidden="true">·</span>
-            )}
-            {directorName && (
-              <span className="flex items-center gap-1">
-                <PersonIcon className="shrink-0" />
-                {directorName}
-              </span>
-            )}
-          </div>
-        )}
+    <div className="border-t border-silver-100">
+      {/* Action row: View details (left) + Register (right) */}
+      <div className="flex">
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-medium text-neutral-500 hover:text-neutral-700 hover:bg-silver-50 border-r border-silver-100 transition-colors duration-150"
+        >
+          {expanded ? 'Hide details' : 'View details'}
+          <ChevronDownIcon className={`transition-transform duration-200 ${expanded ? 'rotate-180' : ''}`} />
+        </button>
+        <a
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold text-primary-600 hover:text-primary-700 hover:bg-primary-50 transition-colors duration-150"
+        >
+          Register
+          <ChevronRightIcon />
+        </a>
+      </div>
 
-        {ageGroups.length > 0 && (
-          <div className="flex flex-wrap justify-end gap-1 shrink-0">
-            {ageGroups.map((ag) =>
-              canExpand ? (
+      {/* Expanded: Who's coming? */}
+      {expanded && (
+        <div className="border-t border-silver-100 px-4 pb-4 pt-3 flex flex-col gap-3">
+          <p className="text-label-sm text-neutral-400">Who&rsquo;s coming?</p>
+
+          {ageGroups.length > 0 && (
+            <div className="flex flex-wrap gap-1">
+              {ageGroups.map((ag) => (
                 <button
                   key={ag.label}
                   type="button"
@@ -124,78 +123,61 @@ export default function CardFooter({ location, directorName, ageGroups, eventId,
                     </span>
                   )}
                 </button>
-              ) : (
-                <span
-                  key={ag.label}
-                  className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded border border-silver-200 bg-silver-50 text-xs text-navy-700"
-                >
-                  <span className="font-semibold">{ag.label}</span>
-                  {ag.teamCount !== null && (
-                    <span className="font-medium text-navy-400">·{ag.teamCount}</span>
-                  )}
-                </span>
-              )
-            )}
-          </div>
-        )}
-      </div>
+              ))}
+            </div>
+          )}
 
-      {/* Expanded team list for the selected age tab */}
-      {activeAge && (
-        <div className="border-t border-silver-100 pt-2.5 pb-0.5">
-          {loading && (
-            <p className="text-xs text-neutral-400">Loading…</p>
-          )}
-          {error && (
-            <p className="text-xs text-red-500">Could not load teams.</p>
-          )}
-          {!loading && !error && divisions && matchedDivisions.length === 0 && (
-            <p className="text-xs text-neutral-400">No team data available.</p>
-          )}
-          <div className="flex flex-col gap-3">
-            {matchedDivisions.map((div) => (
-              <div key={div.divisionName}>
-                {matchedDivisions.length > 1 && (
-                  <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wide mb-1.5">
-                    {div.divisionName}
-                  </p>
-                )}
-                <ul className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-                  {div.teams.map((team, i) => (
-                    <li
-                      key={i}
-                      className="flex items-center justify-between gap-1 text-xs text-neutral-700 min-w-0"
-                    >
-                      <span className="truncate">{team.name}</span>
-                      {team.meta && (
-                        <span className="text-neutral-400 shrink-0 ml-1">{team.meta}</span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+          {activeAge && (
+            <div>
+              {loading && <p className="text-xs text-neutral-400">Loading…</p>}
+              {error && <p className="text-xs text-red-500">Could not load teams.</p>}
+              {!loading && !error && divisions && matchedDivisions.length === 0 && (
+                <p className="text-xs text-neutral-400">No team data available.</p>
+              )}
+              <div className="flex flex-col gap-3">
+                {matchedDivisions.map((div) => (
+                  <div key={div.divisionName}>
+                    {matchedDivisions.length > 1 && (
+                      <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wide mb-1.5">
+                        {div.divisionName}
+                      </p>
+                    )}
+                    <ul className="grid grid-cols-2 gap-x-4 gap-y-0.5">
+                      {div.teams.map((team, i) => (
+                        <li
+                          key={i}
+                          className="flex items-center justify-between gap-1 text-xs text-neutral-700 min-w-0"
+                        >
+                          <span className="truncate">{team.name}</span>
+                          {team.meta && (
+                            <span className="text-neutral-400 shrink-0 ml-1">{team.meta}</span>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </div>
   )
 }
 
-function LocationIcon({ className }: { className?: string }) {
+function ChevronDownIcon({ className }: { className?: string }) {
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" className={className}>
-      <path d="M7 1a4 4 0 0 1 4 4c0 3-4 8-4 8S3 8 3 5a4 4 0 0 1 4-4Z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round" />
-      <circle cx="7" cy="5" r="1.25" fill="currentColor" />
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true" className={className}>
+      <path d="M2 4.5L6 8.5L10 4.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
 
-function PersonIcon({ className }: { className?: string }) {
+function ChevronRightIcon() {
   return (
-    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" className={className}>
-      <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.25" />
-      <path d="M2 12c0-2.21 2.239-4 5-4s5 1.79 5 4" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+    <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden="true">
+      <path d="M4.5 2L8.5 6L4.5 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
