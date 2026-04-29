@@ -71,8 +71,9 @@ jobs:
       - name: Build with Next.js
         run: ${{ steps.detect-package-manager.outputs.runner }} next build
         env:
-          # base_path is empty for custom domains, /repo-name for project pages
-          BASE_PATH: ${{ steps.pages.outputs.base_path }}
+          # base_path is empty for custom domains, /repo-name for project pages.
+          # NEXT_PUBLIC_ prefix inlines the value into client bundles at build time.
+          NEXT_PUBLIC_BASE_PATH: ${{ steps.pages.outputs.base_path }}
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

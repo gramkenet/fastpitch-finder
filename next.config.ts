@@ -1,8 +1,9 @@
 import type { NextConfig } from "next";
 
-// Set by the workflow from actions/configure-pages outputs.base_path.
-// Empty string (default) = custom domain or local dev — no prefix needed.
-const basePath = process.env.BASE_PATH ?? ''
+// NEXT_PUBLIC_BASE_PATH is set by the workflow from actions/configure-pages
+// outputs.base_path (e.g. "/fastpitch-finder" for project pages, "" for custom domains).
+// Using NEXT_PUBLIC_ prefix makes it available in client components at build time.
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? ''
 
 const nextConfig: NextConfig = {
   output: 'export',
