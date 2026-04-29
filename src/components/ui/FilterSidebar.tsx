@@ -1,13 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-
-const STATE_LABELS: Record<string, string> = {
-  MO: 'Missouri',
-  IL: 'Illinois',
-  KS: 'Kansas',
-}
 
 interface Props {
   availableStates: string[]
@@ -19,6 +13,8 @@ interface Props {
   selectedDateTo: string
   selectedSanction: string
   selectedSearch: string
+  selectedZip: string
+  selectedDistance: string
 }
 
 type FilterUpdate = {
@@ -28,6 +24,8 @@ type FilterUpdate = {
   dateTo?: string
   sanction?: string
   search?: string
+  zip?: string
+  distance?: string
 }
 
 export default function FilterSidebar({
@@ -40,9 +38,37 @@ export default function FilterSidebar({
   selectedDateTo,
   selectedSanction,
   selectedSearch,
+  selectedZip,
+  selectedDistance,
 }: Props) {
   const router = useRouter()
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [zipInput, setZipInput] = useState(selectedZip)
+  const [geoLoading, setGeoLoading] = useState(false)
+
+  // Sync zip input when URL param changes (e.g. Clear all)
+  useEffect(() => { setZipInput(selectedZip) }, [selectedZip])
+
+  // Auto-populate zip from geolocation on mount if not already set
+  useEffect(() => {
+    if (selectedZip || !navigator.geolocation) return
+    navigator.geolocation.getCurrentPosition(async (pos) => {
+      try {
+        setGeoLoading(true)
+        const { latitude, longitude } = pos.coords
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+        )
+        const data = await res.json()
+        const zip: string = data.address?.postcode?.replace(/\D/g, '').slice(0, 5) ?? ''
+        if (zip.length === 5) setZipInput(zip)
+      } catch {
+        // silent failure
+      } finally {
+        setGeoLoading(false)
+      }
+    }, () => {}) // silent failure if denied
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   function buildUrl(updates: FilterUpdate) {
     const next = {
@@ -52,6 +78,8 @@ export default function FilterSidebar({
       dateTo: 'dateTo' in updates ? (updates.dateTo ?? '') : selectedDateTo,
       sanction: updates.sanction ?? selectedSanction,
       search: 'search' in updates ? (updates.search ?? '') : selectedSearch,
+      zip: 'zip' in updates ? (updates.zip ?? '') : selectedZip,
+      distance: 'distance' in updates ? (updates.distance ?? '') : selectedDistance,
     }
 
     const params = new URLSearchParams()
@@ -61,6 +89,8 @@ export default function FilterSidebar({
     if (next.dateTo) params.set('dateTo', next.dateTo)
     if (next.sanction !== 'all') params.set('sanction', next.sanction)
     if (next.search.length >= 4) params.set('search', next.search)
+    if (next.zip) params.set('zip', next.zip)
+    if (next.distance) params.set('distance', next.distance)
 
     const qs = params.toString()
     return qs ? `/?${qs}` : '/'
@@ -76,7 +106,8 @@ export default function FilterSidebar({
     !!selectedDateFrom ||
     !!selectedDateTo ||
     selectedSanction !== 'all' ||
-    selectedSearch.length >= 4
+    selectedSearch.length >= 4 ||
+    (!!selectedZip && !!selectedDistance)
 
   const activeFilterCount = [
     selectedState !== 'all',
@@ -84,17 +115,8 @@ export default function FilterSidebar({
     !!selectedDateFrom || !!selectedDateTo,
     selectedSanction !== 'all',
     selectedSearch.length >= 4,
+    !!selectedZip && !!selectedDistance,
   ].filter(Boolean).length
-
-  const SANCTION_COLORS: Record<string, string> = {
-    USSSA: 'var(--color-columbia-500)',
-    'USA Softball': 'var(--color-error-500)',
-  }
-
-  const sanctionOptions = [
-    { value: 'all', label: 'All', color: undefined },
-    ...availableSanctions.map((s) => ({ value: s, label: s, color: SANCTION_COLORS[s] })),
-  ]
 
   return (
     <div className="card flex flex-col gap-5">
@@ -134,15 +156,16 @@ export default function FilterSidebar({
       <div className={`flex-col gap-5 ${mobileOpen ? 'flex' : 'hidden lg:flex'}`}>
         {/* Sanction */}
         <FilterSection label="Sanction">
-          {sanctionOptions.map((opt) => (
-            <RadioItem
-              key={opt.value}
-              label={opt.label}
-              color={opt.color}
-              isSelected={opt.value === selectedSanction}
-              onClick={() => navigate({ sanction: opt.value })}
-            />
-          ))}
+          <select
+            value={selectedSanction}
+            onChange={(e) => navigate({ sanction: e.target.value })}
+            className="input"
+          >
+            <option value="all">All Sanctions</option>
+            {availableSanctions.map((s) => (
+              <option key={s} value={s}>{s}</option>
+            ))}
+          </select>
         </FilterSection>
 
         {/* State */}
@@ -154,9 +177,7 @@ export default function FilterSidebar({
           >
             <option value="all">All States</option>
             {availableStates.map((code) => (
-              <option key={code} value={code}>
-                {STATE_LABELS[code] ?? code}
-              </option>
+              <option key={code} value={code}>{code}</option>
             ))}
           </select>
         </FilterSection>
@@ -203,6 +224,71 @@ export default function FilterSidebar({
             </div>
           </div>
         </FilterSection>
+
+        {/* Location */}
+        <FilterSection label="Location">
+          <div className="flex gap-1.5">
+            <input
+              type="text"
+              inputMode="numeric"
+              placeholder={geoLoading ? 'Detecting…' : 'Zip code'}
+              value={zipInput}
+              onChange={(e) => setZipInput(e.target.value.replace(/\D/g, '').slice(0, 5))}
+              onBlur={(e) => {
+                const v = e.target.value
+                if (v.length === 5) navigate({ zip: v })
+                else if (!v) navigate({ zip: '' })
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && zipInput.length === 5) navigate({ zip: zipInput })
+              }}
+              maxLength={5}
+              className="input flex-1 min-w-0"
+              disabled={geoLoading}
+            />
+            <button
+              type="button"
+              title="Use my location"
+              disabled={geoLoading}
+              onClick={async () => {
+                if (!navigator.geolocation) return
+                setGeoLoading(true)
+                try {
+                  const pos = await new Promise<GeolocationPosition>((resolve, reject) =>
+                    navigator.geolocation.getCurrentPosition(resolve, reject)
+                  )
+                  const { latitude, longitude } = pos.coords
+                  const res = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+                  )
+                  const data = await res.json()
+                  const zip: string = data.address?.postcode?.replace(/\D/g, '').slice(0, 5) ?? ''
+                  if (zip.length === 5) {
+                    setZipInput(zip)
+                    navigate({ zip })
+                  }
+                } catch {
+                  // silent
+                } finally {
+                  setGeoLoading(false)
+                }
+              }}
+              className="shrink-0 w-10 flex items-center justify-center rounded-lg border border-neutral-300 bg-white text-neutral-500 hover:text-navy-700 hover:border-navy-500 transition-colors duration-150 disabled:opacity-50"
+            >
+              <LocationPinIcon />
+            </button>
+          </div>
+          <select
+            value={selectedDistance}
+            onChange={(e) => navigate({ distance: e.target.value })}
+            className="input"
+          >
+            <option value="">All distances</option>
+            {[50, 100, 150, 200, 250, 300].map((mi) => (
+              <option key={mi} value={String(mi)}>{mi} miles</option>
+            ))}
+          </select>
+        </FilterSection>
       </div>
     </div>
   )
@@ -217,42 +303,13 @@ function FilterSection({ label, children }: { label: string; children: React.Rea
   )
 }
 
-function RadioItem({
-  label,
-  color,
-  isSelected,
-  onClick,
-}: {
-  label: string
-  color?: string
-  isSelected: boolean
-  onClick: () => void
-}) {
+
+function LocationPinIcon() {
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`flex items-center gap-2.5 px-2 py-2 rounded-lg text-body-sm transition-colors duration-150 text-left w-full ${
-        isSelected
-          ? 'text-navy-700 font-semibold'
-          : 'text-neutral-600 hover:text-neutral-900 hover:bg-silver-100'
-      }`}
-    >
-      <span
-        className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center ${
-          isSelected ? 'border-navy-600' : 'border-neutral-300'
-        }`}
-      >
-        {isSelected && <span className="w-2 h-2 rounded-full bg-navy-600" />}
-      </span>
-      {color && (
-        <span
-          className="w-[3px] h-[14px] rounded-full shrink-0"
-          style={{ backgroundColor: color }}
-        />
-      )}
-      {label}
-    </button>
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path d="M8 1.5A4.5 4.5 0 0 1 12.5 6c0 3.5-4.5 8.5-4.5 8.5S3.5 9.5 3.5 6A4.5 4.5 0 0 1 8 1.5Z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round" />
+      <circle cx="8" cy="6" r="1.5" fill="currentColor" />
+    </svg>
   )
 }
 

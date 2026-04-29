@@ -1,70 +1,56 @@
-'use client'
-
-import { useSearchParams } from 'next/navigation'
 import type { ScrapedEvent } from '@/types/event'
+import { PAGE_SIZE } from '@/lib/constants'
 import HomeHero from './HomeHero'
 import FilterSidebar from './FilterSidebar'
 import CardGrid from './CardGrid'
 import EventCard from './EventCard'
 import Pagination from './Pagination'
 
-const PAGE_SIZE = 24
-
 interface Props {
-  allEvents: ScrapedEvent[]
+  events: ScrapedEvent[]
+  totalCount: number
+  currentPage: number
   availableStates: string[]
   availableAges: string[]
   availableSanctions: string[]
+  hasActiveFilters: boolean
+  selectedState: string
+  selectedAges: string[]
+  selectedDateFrom: string
+  selectedDateTo: string
+  selectedSanction: string
+  selectedSearch: string
+  selectedZip: string
+  selectedDistance: string
 }
 
 export default function EventsExplorer({
-  allEvents,
+  events,
+  totalCount,
+  currentPage,
   availableStates,
   availableAges,
   availableSanctions,
+  hasActiveFilters,
+  selectedState,
+  selectedAges,
+  selectedDateFrom,
+  selectedDateTo,
+  selectedSanction,
+  selectedSearch,
+  selectedZip,
+  selectedDistance,
 }: Props) {
-  const searchParams = useSearchParams()
-
-  const selectedState    = searchParams.get('state')   ?? 'all'
-  const selectedAges     = searchParams.get('ages')?.split(',').filter(Boolean) ?? []
-  const selectedDateFrom = searchParams.get('dateFrom') ?? ''
-  const selectedDateTo   = searchParams.get('dateTo')   ?? ''
-  const selectedSanction = searchParams.get('sanction') ?? 'all'
-  const selectedSearch   = searchParams.get('search')   ?? ''
-  const currentPage      = Math.max(1, parseInt(searchParams.get('page') ?? '1', 10))
-
-  let filtered = selectedState === 'all'
-    ? allEvents
-    : allEvents.filter((e) => e.states.includes(selectedState))
-
-  if (selectedAges.length > 0) {
-    filtered = filtered.filter((e) =>
-      e.ageGroups.some((ag) => selectedAges.includes(ag.label))
-    )
-  }
-  if (selectedDateFrom) filtered = filtered.filter((e) => e.eventStartDate >= selectedDateFrom)
-  if (selectedDateTo)   filtered = filtered.filter((e) => e.eventStartDate <= selectedDateTo)
-  if (selectedSanction !== 'all') filtered = filtered.filter((e) => e.sanction === selectedSanction)
-
-  if (selectedSearch.length >= 4) {
-    const q = selectedSearch.toLowerCase()
-    filtered = filtered.filter((e) =>
-      [e.name, e.city, e.state, e.venueName, e.directorName, e.statureName, e.sanction,
-        ...e.ageGroups.map((ag) => ag.label)]
-        .some((field) => field?.toLowerCase().includes(q))
-    )
-  }
-
-  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
-  const safePage   = Math.min(currentPage, Math.max(1, totalPages))
-  const events     = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE)
 
   const filterParams = new URLSearchParams()
   if (selectedState !== 'all') filterParams.set('state', selectedState)
   if (selectedAges.length > 0) filterParams.set('ages', selectedAges.join(','))
   if (selectedDateFrom) filterParams.set('dateFrom', selectedDateFrom)
-  if (selectedDateTo)   filterParams.set('dateTo', selectedDateTo)
+  if (selectedDateTo) filterParams.set('dateTo', selectedDateTo)
   if (selectedSanction !== 'all') filterParams.set('sanction', selectedSanction)
+  if (selectedZip) filterParams.set('zip', selectedZip)
+  if (selectedDistance) filterParams.set('distance', selectedDistance)
   const searchBase = filterParams.toString() ? `/?${filterParams}` : '/'
 
   const paginationParams = new URLSearchParams(filterParams)
@@ -74,7 +60,8 @@ export default function EventsExplorer({
   return (
     <>
       <HomeHero
-        filteredCount={filtered.length}
+        filteredCount={totalCount}
+        hasActiveFilters={hasActiveFilters}
         selectedSearch={selectedSearch}
         searchBase={searchBase}
       />
@@ -92,13 +79,24 @@ export default function EventsExplorer({
               selectedDateTo={selectedDateTo}
               selectedSanction={selectedSanction}
               selectedSearch={selectedSearch}
+              selectedZip={selectedZip}
+              selectedDistance={selectedDistance}
             />
           </aside>
 
           <section className="min-w-0">
-            {filtered.length === 0 ? (
-              <p className="text-body-lg text-neutral-500">
-                No events found. Try adjusting your filters.
+            {!hasActiveFilters ? (
+              <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+                <p className="text-body-lg text-neutral-500">
+                  Use the filters to find upcoming tournaments.
+                </p>
+                <p className="text-body-sm text-neutral-400">
+                  Filter by state, sanction, age division, date range, or search by name.
+                </p>
+              </div>
+            ) : events.length === 0 ? (
+              <p className="text-body-lg text-neutral-500 py-16 text-center">
+                No events match your filters.
               </p>
             ) : (
               <>
@@ -111,7 +109,7 @@ export default function EventsExplorer({
                 {totalPages > 1 && (
                   <div className="mt-12">
                     <Pagination
-                      currentPage={safePage}
+                      currentPage={currentPage}
                       totalPages={totalPages}
                       basePath={paginationBase}
                     />

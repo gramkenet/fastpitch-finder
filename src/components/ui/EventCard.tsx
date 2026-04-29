@@ -1,8 +1,18 @@
 import Link from 'next/link'
 import Image from 'next/image'
-import type { ScrapedEvent } from '@/types/event'
+import type { AgeGroup, ScrapedEvent } from '@/types/event'
 import CardFooter from './CardFooter'
 import SaveButton from './SaveButton'
+
+function ageRangeLabel(ageGroups: AgeGroup[]): string | null {
+  const ages = ageGroups
+    .map((ag) => { const m = ag.label.match(/^(\d+)/); return m ? parseInt(m[1], 10) : null })
+    .filter((n): n is number => n !== null)
+  if (ages.length === 0) return null
+  const min = Math.min(...ages)
+  const max = Math.max(...ages)
+  return min === max ? `${min}U` : `${min}U–${max}U`
+}
 
 function formatDateRange(start: string, end: string): string {
   const s = new Date(start)
@@ -41,13 +51,7 @@ function EventLogo({ logoUrl, sanction }: { logoUrl: string | null; sanction: st
   if (src) {
     return (
       <div className="relative w-10 h-10">
-        <Image
-          src={src}
-          alt=""
-          fill
-          sizes="40px"
-          className="object-contain"
-        />
+        <Image src={src} alt="" fill sizes="40px" className="object-contain" />
       </div>
     )
   }
@@ -65,78 +69,143 @@ function EventLogo({ logoUrl, sanction }: { logoUrl: string | null; sanction: st
   )
 }
 
-const SANCTION_BORDER: Record<string, string> = {
+const SANCTION_COLOR: Record<string, string> = {
   USSSA: 'var(--color-columbia-500)',
   'USA Softball': 'var(--color-error-500)',
+  FASA: 'var(--color-columbia-300)',
+  NSA: 'var(--color-primary-500)',
+}
+
+const SANCTION_LABEL: Record<string, string> = {
+  'USA Softball': 'USA SB',
 }
 
 export default function EventCard({ event }: { event: ScrapedEvent }) {
   const dateRange = formatDateRange(event.eventStartDate, event.eventEndDate)
   const location = [event.venueName, event.city, event.state].filter(Boolean).join(', ')
   const feeStr = formatEntryFee(event.entryFee)
-  const borderColor = SANCTION_BORDER[event.sanction]
+  const accentColor = SANCTION_COLOR[event.sanction]
+  const sanctionLabel = SANCTION_LABEL[event.sanction] ?? event.sanction
+  const ageRange = ageRangeLabel(event.ageGroups)
+  const canExpand = event.usssaId !== undefined || event.tmvpId !== undefined
 
   return (
     <article
-      className="card flex flex-row gap-4 p-0 overflow-hidden"
-      style={borderColor ? { borderLeftWidth: 4, borderLeftColor: borderColor } : undefined}
+      className="card relative flex flex-col p-0 overflow-hidden"
+      style={accentColor ? { borderTopWidth: 4, borderTopColor: accentColor, borderLeftWidth: 4, borderLeftColor: accentColor } : undefined}
     >
-      {/* Logo — full-height strip, content pinned to top so it doesn't shift on expand */}
-      <div className={`w-16 self-stretch shrink-0 bg-white flex flex-col items-center gap-1 ${event.sanction === 'USSSA' ? 'pt-[60px]' : 'pt-[45px]'}`}>
-        <EventLogo logoUrl={event.logoUrl} sanction={event.sanction} />
-      </div>
+      {/* Sanction badge flush with the top-left corner */}
+      {accentColor && (
+        <span
+          className="absolute top-0 left-0 text-[10px] font-bold tracking-wide uppercase px-1.5 py-1 rounded-br-md text-white leading-none"
+          style={{ backgroundColor: accentColor }}
+        >
+          {sanctionLabel}
+        </span>
+      )}
 
-      {/* Card content */}
-      <div className="flex flex-col gap-2 flex-1 min-w-0 py-4 pr-4">
-        {/* Header: date (left) | team count + stature badges (right) */}
-        <div className="flex items-start justify-between gap-2">
-          <span className="text-label-sm text-primary-600">{dateRange}</span>
-          <div className="flex items-center gap-1.5 flex-wrap justify-end shrink-0">
-            {event.teamCount !== null && event.teamCount > 0 && (
-              <span className="badge badge-neutral">{event.teamCount} teams</span>
-            )}
-            {event.statureName && (
-              <span className="badge badge-primary">{event.statureName}</span>
-            )}
-            <SaveButton event={event} />
-          </div>
+      {/* Main content row: logo strip + details */}
+      <div className="flex flex-row gap-4">
+        {/* Logo strip */}
+        <div className="w-16 self-stretch shrink-0 bg-white flex flex-col items-center gap-1 pt-10">
+          <EventLogo logoUrl={event.logoUrl} sanction={event.sanction} />
         </div>
 
-        {/* Title (left) + entry fee (right) — baseline aligned */}
-        <div className="flex items-baseline justify-between gap-3">
-          <h3 className="text-heading-sm text-neutral-900 leading-snug flex-1 min-w-0">
-            <Link
-              href={event.href}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-navy-700 transition-colors duration-150"
-            >
-              {event.name}
-            </Link>
-          </h3>
-          {feeStr && (
-            <span className="text-body-sm font-medium text-neutral-700 shrink-0 whitespace-nowrap">
-              {feeStr}
-            </span>
+        {/* Details column */}
+        <div className="flex flex-col gap-2 flex-1 min-w-0 py-4 pr-4">
+          {/* Header: badges top-right on mobile (own line), inline with date on desktop */}
+          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-2 lg:gap-2">
+            <div className="flex items-center gap-1.5 flex-wrap justify-end order-first lg:order-last shrink-0">
+              {event.teamCount !== null && event.teamCount > 0 && (
+                <span className="badge badge-neutral">{event.teamCount} teams</span>
+              )}
+              {ageRange && (
+                <span className="badge badge-neutral">{ageRange}</span>
+              )}
+              {event.statureName && (
+                <span className="badge badge-primary">{event.statureName}</span>
+              )}
+              <SaveButton event={event} />
+            </div>
+            <span className="text-label-sm text-primary-600 order-last lg:order-first">{dateRange}</span>
+          </div>
+
+          {/* Title + entry fee */}
+          <div className="flex items-baseline justify-between gap-3">
+            <h3 className="text-heading-sm text-neutral-900 leading-snug flex-1 min-w-0">
+              <Link
+                href={event.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-navy-700 transition-colors duration-150"
+              >
+                {event.name}
+              </Link>
+            </h3>
+            {feeStr && (
+              <span className="text-body-sm font-medium text-neutral-700 shrink-0 whitespace-nowrap">
+                {feeStr}
+              </span>
+            )}
+          </div>
+
+          {/* Registration deadline */}
+          {event.registrationDeadline && (
+            <p className="text-body-sm text-neutral-500">
+              Reg. by {formatDeadline(event.registrationDeadline)}
+            </p>
+          )}
+
+          {/* Location + director */}
+          {(location || event.directorName) && (
+            <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 text-body-sm text-neutral-500 mt-auto">
+              {location && (
+                <span className="flex items-center gap-1">
+                  <LocationIcon className="shrink-0" />
+                  {location}
+                </span>
+              )}
+              {location && event.directorName && (
+                <span className="hidden lg:inline text-neutral-300 select-none" aria-hidden="true">·</span>
+              )}
+              {event.directorName && (
+                <span className="flex items-center gap-1">
+                  <PersonIcon className="shrink-0" />
+                  {event.directorName}
+                </span>
+              )}
+            </div>
           )}
         </div>
+      </div>
 
-        {/* Registration deadline */}
-        {event.registrationDeadline && (
-          <p className="text-body-sm text-neutral-500">
-            Reg. by {formatDeadline(event.registrationDeadline)}
-          </p>
-        )}
-
-        {/* Footer: location · director | age tabs → expands team list */}
+      {/* Full-width View details section */}
+      {canExpand && (
         <CardFooter
-          location={location}
-          directorName={event.directorName}
+          href={event.href}
           ageGroups={event.ageGroups}
           eventId={event.usssaId}
           tmvpId={event.tmvpId}
         />
-      </div>
+      )}
     </article>
+  )
+}
+
+function LocationIcon({ className }: { className?: string }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" className={className}>
+      <path d="M7 1a4 4 0 0 1 4 4c0 3-4 8-4 8S3 8 3 5a4 4 0 0 1 4-4Z" stroke="currentColor" strokeWidth="1.25" strokeLinejoin="round" />
+      <circle cx="7" cy="5" r="1.25" fill="currentColor" />
+    </svg>
+  )
+}
+
+function PersonIcon({ className }: { className?: string }) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true" className={className}>
+      <circle cx="7" cy="4.5" r="2.5" stroke="currentColor" strokeWidth="1.25" />
+      <path d="M2 12c0-2.21 2.239-4 5-4s5 1.79 5 4" stroke="currentColor" strokeWidth="1.25" strokeLinecap="round" />
+    </svg>
   )
 }

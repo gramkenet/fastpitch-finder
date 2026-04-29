@@ -6,6 +6,7 @@ const nextConfig: NextConfig = {
       { protocol: 'https', hostname: 'dc.usssa.com', pathname: '/api/uploads/**' },
       { protocol: 'https', hostname: 'mofastpitch.usssa.com', pathname: '/wp-content/**' },
       { protocol: 'https', hostname: 'tournamentmvp.com', pathname: '/assets/img/logos/**' },
+      { protocol: 'https', hostname: 'playfasa.com', pathname: '/IMAGES/**' },
     ],
   },
 };
