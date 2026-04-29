@@ -19,12 +19,14 @@ export interface DivisionTeams {
 export interface ScrapedEvent {
   id: string           // "{sourceId}::{eventId}"
   usssaId?: number     // numeric USSSA event ID; undefined for non-USSSA sources
+  tmvpId?: number      // TournamentMVP tournament ID; undefined for non-TMVP sources
   name: string
   href: string         // https://www.usssa.com/fastpitch/event-details/?id={usssaEventId}
   eventStartDate: string  // ISO 8601
   eventEndDate: string    // ISO 8601
   city: string | null
   state: string | null
+  states: string[]          // all states this event is visible under in the filter
   statureName: string | null   // "Tournament", "League", "Non Qualifier", etc.
   maxAgeGroup: number | null   // 0 = open / all ages; 14 = 14U and under
   ageGroups: AgeGroup[]        // from divisions endpoint, grouped by age number

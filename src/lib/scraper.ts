@@ -153,6 +153,7 @@ async function fetchSource(source: EventSourceConfig): Promise<ScrapedEvent[]> {
     eventEndDate: e.eventEndDate,
     city: e.city ?? null,
     state: e.state ?? null,
+    states: e.state ? [e.state] : [],
     statureName: e.statureName ?? null,
     maxAgeGroup: e.maxAgeGroup || null,
     ageGroups: details[i].ageGroups,

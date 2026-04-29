@@ -25,7 +25,7 @@ export default function EventsExplorer({
 }: Props) {
   const searchParams = useSearchParams()
 
-  const selectedState    = searchParams.get('state')   ?? 'MO'
+  const selectedState    = searchParams.get('state')   ?? 'all'
   const selectedAges     = searchParams.get('ages')?.split(',').filter(Boolean) ?? []
   const selectedDateFrom = searchParams.get('dateFrom') ?? ''
   const selectedDateTo   = searchParams.get('dateTo')   ?? ''
@@ -35,7 +35,7 @@ export default function EventsExplorer({
 
   let filtered = selectedState === 'all'
     ? allEvents
-    : allEvents.filter((e) => e.state === selectedState)
+    : allEvents.filter((e) => e.states.includes(selectedState))
 
   if (selectedAges.length > 0) {
     filtered = filtered.filter((e) =>
@@ -60,7 +60,7 @@ export default function EventsExplorer({
   const events     = filtered.slice((safePage - 1) * PAGE_SIZE, safePage * PAGE_SIZE)
 
   const filterParams = new URLSearchParams()
-  if (selectedState !== 'MO') filterParams.set('state', selectedState)
+  if (selectedState !== 'all') filterParams.set('state', selectedState)
   if (selectedAges.length > 0) filterParams.set('ages', selectedAges.join(','))
   if (selectedDateFrom) filterParams.set('dateFrom', selectedDateFrom)
   if (selectedDateTo)   filterParams.set('dateTo', selectedDateTo)

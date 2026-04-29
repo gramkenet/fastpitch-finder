@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 const STATE_LABELS: Record<string, string> = {
@@ -41,6 +42,7 @@ export default function FilterSidebar({
   selectedSearch,
 }: Props) {
   const router = useRouter()
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   function buildUrl(updates: FilterUpdate) {
     const next = {
@@ -53,7 +55,7 @@ export default function FilterSidebar({
     }
 
     const params = new URLSearchParams()
-    if (next.state !== 'MO') params.set('state', next.state)
+    if (next.state !== 'all') params.set('state', next.state)
     if (next.ages.length > 0) params.set('ages', next.ages.join(','))
     if (next.dateFrom) params.set('dateFrom', next.dateFrom)
     if (next.dateTo) params.set('dateTo', next.dateTo)
@@ -69,12 +71,20 @@ export default function FilterSidebar({
   }
 
   const hasActiveFilters =
-    selectedState !== 'MO' ||
+    selectedState !== 'all' ||
     selectedAges.length > 0 ||
     !!selectedDateFrom ||
     !!selectedDateTo ||
     selectedSanction !== 'all' ||
     selectedSearch.length >= 4
+
+  const activeFilterCount = [
+    selectedState !== 'all',
+    selectedAges.length > 0,
+    !!selectedDateFrom || !!selectedDateTo,
+    selectedSanction !== 'all',
+    selectedSearch.length >= 4,
+  ].filter(Boolean).length
 
   const SANCTION_COLORS: Record<string, string> = {
     USSSA: 'var(--color-columbia-500)',
@@ -88,91 +98,112 @@ export default function FilterSidebar({
 
   return (
     <div className="card flex flex-col gap-5">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <h2 className="text-label-sm text-neutral-400">Filters</h2>
+      {/* Header — toggle on mobile, static label on desktop */}
+      <div className="flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={() => setMobileOpen((o) => !o)}
+          aria-expanded={mobileOpen}
+          className="flex items-center gap-2 lg:pointer-events-none"
+        >
+          <h2 className="text-label-sm text-neutral-400">Filters</h2>
+          {!mobileOpen && activeFilterCount > 0 && (
+            <span className="lg:hidden badge badge-navy px-1.5 py-0.5 text-[10px]">
+              {activeFilterCount}
+            </span>
+          )}
+          <ChevronDownIcon
+            className={`lg:hidden text-neutral-400 transition-transform duration-200 ${
+              mobileOpen ? 'rotate-180' : ''
+            }`}
+          />
+        </button>
+
         {hasActiveFilters && (
           <button
             type="button"
             onClick={() => router.push('/')}
-            className="text-xs text-navy-600 hover:text-navy-800 font-medium transition-colors duration-150"
+            className="text-xs text-navy-600 hover:text-navy-800 font-medium transition-colors duration-150 shrink-0"
           >
             Clear all
           </button>
         )}
       </div>
 
-      {/* Sanction */}
-      <FilterSection label="Sanction">
-        {sanctionOptions.map((opt) => (
-          <RadioItem
-            key={opt.value}
-            label={opt.label}
-            color={opt.color}
-            isSelected={opt.value === selectedSanction}
-            onClick={() => navigate({ sanction: opt.value })}
-          />
-        ))}
-      </FilterSection>
-
-      {/* State */}
-      <FilterSection label="State">
-        <select
-          value={selectedState}
-          onChange={(e) => navigate({ state: e.target.value })}
-          className="input"
-        >
-          <option value="all">All States</option>
-          {availableStates.map((code) => (
-            <option key={code} value={code}>
-              {STATE_LABELS[code] ?? code}
-            </option>
-          ))}
-        </select>
-      </FilterSection>
-
-      {/* Age Division */}
-      <FilterSection label="Age Division">
-        <select
-          value={selectedAges.length === 1 ? selectedAges[0] : 'all'}
-          onChange={(e) => {
-            const val = e.target.value
-            navigate({ ages: val === 'all' ? [] : [val] })
-          }}
-          className="input"
-        >
-          <option value="all">All Ages</option>
-          {availableAges.map((age) => (
-            <option key={age} value={age}>{age}</option>
-          ))}
-        </select>
-      </FilterSection>
-
-      {/* Date Range */}
-      <FilterSection label="Date Range">
-        <div className="flex flex-col gap-2">
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-neutral-500 font-medium">From</label>
-            <input
-              key={`from-${selectedDateFrom}`}
-              type="date"
-              defaultValue={selectedDateFrom}
-              onBlur={(e) => navigate({ dateFrom: e.target.value })}
-              className="input"
+      {/* Filter sections — collapsed on mobile by default, always open on lg+ */}
+      <div className={`flex-col gap-5 ${mobileOpen ? 'flex' : 'hidden lg:flex'}`}>
+        {/* Sanction */}
+        <FilterSection label="Sanction">
+          {sanctionOptions.map((opt) => (
+            <RadioItem
+              key={opt.value}
+              label={opt.label}
+              color={opt.color}
+              isSelected={opt.value === selectedSanction}
+              onClick={() => navigate({ sanction: opt.value })}
             />
+          ))}
+        </FilterSection>
+
+        {/* State */}
+        <FilterSection label="State">
+          <select
+            value={selectedState}
+            onChange={(e) => navigate({ state: e.target.value })}
+            className="input"
+          >
+            <option value="all">All States</option>
+            {availableStates.map((code) => (
+              <option key={code} value={code}>
+                {STATE_LABELS[code] ?? code}
+              </option>
+            ))}
+          </select>
+        </FilterSection>
+
+        {/* Age Division */}
+        <FilterSection label="Age Division">
+          <select
+            value={selectedAges.length === 1 ? selectedAges[0] : 'all'}
+            onChange={(e) => {
+              const val = e.target.value
+              navigate({ ages: val === 'all' ? [] : [val] })
+            }}
+            className="input"
+          >
+            <option value="all">All Ages</option>
+            {availableAges.map((age) => (
+              <option key={age} value={age}>{age}</option>
+            ))}
+          </select>
+        </FilterSection>
+
+        {/* Date Range */}
+        <FilterSection label="Date Range">
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-neutral-500 font-medium">From</label>
+              <input
+                key={`from-${selectedDateFrom}`}
+                type="date"
+                defaultValue={selectedDateFrom}
+                onBlur={(e) => navigate({ dateFrom: e.target.value })}
+                className="input"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-xs text-neutral-500 font-medium">To</label>
+              <input
+                key={`to-${selectedDateTo}`}
+                type="date"
+                defaultValue={selectedDateTo}
+                onBlur={(e) => navigate({ dateTo: e.target.value })}
+                className="input"
+              />
+            </div>
           </div>
-          <div className="flex flex-col gap-1">
-            <label className="text-xs text-neutral-500 font-medium">To</label>
-            <input
-              key={`to-${selectedDateTo}`}
-              type="date"
-              defaultValue={selectedDateTo}
-              onBlur={(e) => navigate({ dateTo: e.target.value })}
-              className="input"
-            />
-          </div>
-        </div>
-      </FilterSection>
+        </FilterSection>
+      </div>
     </div>
   )
 }
@@ -222,5 +253,26 @@ function RadioItem({
       )}
       {label}
     </button>
+  )
+}
+
+function ChevronDownIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      width="14"
+      height="14"
+      viewBox="0 0 14 14"
+      fill="none"
+      aria-hidden="true"
+      className={className}
+    >
+      <path
+        d="M2.5 5L7 9.5L11.5 5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
   )
 }

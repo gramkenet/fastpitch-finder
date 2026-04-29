@@ -134,6 +134,7 @@ export default function EventCard({ event }: { event: ScrapedEvent }) {
           directorName={event.directorName}
           ageGroups={event.ageGroups}
           eventId={event.usssaId}
+          tmvpId={event.tmvpId}
         />
       </div>
     </article>

@@ -59,7 +59,7 @@ export default function Header() {
             aria-label="FastPitch Finder home"
           >
             <Image
-              src={`${process.env.NEXT_PUBLIC_BASE_PATH ?? ''}/fastpitch-finder.png`}
+              src="/fastpitch-finder.png"
               alt="FastPitch Finder"
               width={500}
               height={150}

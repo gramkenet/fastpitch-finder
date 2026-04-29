@@ -2,6 +2,12 @@
 
 import { useState } from 'react'
 import type { AgeGroup, DivisionTeams } from '@/types/event'
+import type { TMVPDivision } from '@/app/api/tmvp-teams/route'
+
+type ParsedDivision = {
+  divisionName: string
+  teams: { name: string; meta: string | null }[]
+}
 
 function ageFromLabel(label: string): number | null {
   const m = label.match(/^(\d+)/)
@@ -9,7 +15,7 @@ function ageFromLabel(label: string): number | null {
 }
 
 function ageFromDivisionName(name: string): number | null {
-  const m = name.match(/(\d+)\s*(?:&\s*under|u\b)/i)
+  const m = name.match(/^(\d+)/)
   return m ? parseInt(m[1], 10) : null
 }
 
@@ -17,14 +23,17 @@ interface Props {
   location: string
   directorName: string | null
   ageGroups: AgeGroup[]
-  eventId?: number  // absent for non-USSSA sources; disables team lookup
+  eventId?: number    // USSSA numeric event ID
+  tmvpId?: number     // TournamentMVP tournament ID
 }
 
-export default function CardFooter({ location, directorName, ageGroups, eventId }: Props) {
+export default function CardFooter({ location, directorName, ageGroups, eventId, tmvpId }: Props) {
   const [activeAge, setActiveAge] = useState<string | null>(null)
-  const [divisions, setDivisions] = useState<DivisionTeams[] | null>(null)
+  const [divisions, setDivisions] = useState<ParsedDivision[] | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(false)
+
+  const canExpand = eventId !== undefined || tmvpId !== undefined
 
   async function selectAge(label: string) {
     if (activeAge === label) {
@@ -37,11 +46,25 @@ export default function CardFooter({ location, directorName, ageGroups, eventId 
     setLoading(true)
     setError(false)
     try {
-      const res = await fetch(
-        `https://sportsvc.usssa.com/api/Event/teamsSummaryLwc?eventId=${eventId}`
-      )
-      if (!res.ok) throw new Error()
-      setDivisions(await res.json())
+      if (eventId !== undefined) {
+        const res = await fetch(
+          `https://sportsvc.usssa.com/api/Event/teamsSummaryLwc?eventId=${eventId}`
+        )
+        if (!res.ok) throw new Error()
+        const data: DivisionTeams[] = await res.json()
+        setDivisions(data.map((div) => ({
+          divisionName: div.divisionName,
+          teams: div.teamsSummaryLwc.map((t) => ({ name: t.teamName, meta: t.stateABR })),
+        })))
+      } else if (tmvpId !== undefined) {
+        const res = await fetch(`/api/tmvp-teams?id=${tmvpId}`)
+        if (!res.ok) throw new Error()
+        const data: { divisions: TMVPDivision[] } = await res.json()
+        setDivisions(data.divisions.map((div) => ({
+          divisionName: div.divisionName,
+          teams: div.teams.map((t) => ({ name: t.teamName, meta: t.coach })),
+        })))
+      }
     } catch {
       setError(true)
     } finally {
@@ -83,7 +106,7 @@ export default function CardFooter({ location, directorName, ageGroups, eventId 
         {ageGroups.length > 0 && (
           <div className="flex flex-wrap justify-end gap-1 shrink-0">
             {ageGroups.map((ag) =>
-              eventId ? (
+              canExpand ? (
                 <button
                   key={ag.label}
                   type="button"
@@ -131,20 +154,22 @@ export default function CardFooter({ location, directorName, ageGroups, eventId 
           )}
           <div className="flex flex-col gap-3">
             {matchedDivisions.map((div) => (
-              <div key={div.divisionId}>
+              <div key={div.divisionName}>
                 {matchedDivisions.length > 1 && (
                   <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wide mb-1.5">
                     {div.divisionName}
                   </p>
                 )}
                 <ul className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-                  {div.teamsSummaryLwc.map((team) => (
+                  {div.teams.map((team, i) => (
                     <li
-                      key={team.teamId}
+                      key={i}
                       className="flex items-center justify-between gap-1 text-xs text-neutral-700 min-w-0"
                     >
-                      <span className="truncate">{team.teamName}</span>
-                      <span className="text-neutral-400 shrink-0 ml-1">{team.stateABR}</span>
+                      <span className="truncate">{team.name}</span>
+                      {team.meta && (
+                        <span className="text-neutral-400 shrink-0 ml-1">{team.meta}</span>
+                      )}
                     </li>
                   ))}
                 </ul>
