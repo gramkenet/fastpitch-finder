@@ -10,8 +10,8 @@ export default async function HomePage() {
   )
 
   const availableStates = [
-    ...new Set(sorted.map((e) => e.state).filter(Boolean)),
-  ] as string[]
+    ...new Set(sorted.flatMap((e) => e.states)),
+  ]
 
   const availableSanctions = [...new Set(sorted.map((e) => e.sanction))]
 
