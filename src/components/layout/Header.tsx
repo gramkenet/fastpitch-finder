@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
+import ThemeToggle from '@/components/ui/ThemeToggle'
 
 const utilityLinks = [
   { label: 'USSSA', href: 'https://www.usssa.com/fastpitch' },
@@ -11,7 +12,7 @@ const utilityLinks = [
 
 const primaryLinks = [
   { label: 'My Tournaments', href: '/tournaments' },
-  { label: 'My Teams', href: '/teams' },
+  { label: 'Teams', href: '/teams' },
 ]
 
 export default function Header() {
@@ -48,7 +49,7 @@ export default function Header() {
         </div>
       </div>
 
-      <header className="sticky top-0 z-sticky bg-white shadow-sm">
+      <header className="sticky top-0 z-sticky bg-white dark:bg-navy-900 shadow-sm">
       {/* Primary nav bar */}
       <div className="border-b border-neutral-200">
         <div className="container-page flex items-center justify-between h-16">
@@ -75,7 +76,7 @@ export default function Header() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="px-4 py-2 rounded-lg text-body-sm font-medium text-neutral-700 hover:text-navy-700 hover:bg-silver-100 transition-colors duration-150"
+                    className="px-4 py-2 rounded-lg text-body-sm font-medium text-neutral-700 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-silver-100 transition-colors duration-150"
                   >
                     {label}
                   </Link>
@@ -84,17 +85,21 @@ export default function Header() {
             </ul>
           </nav>
 
-          {/* Hamburger button — mobile only */}
-          <button
-            type="button"
-            onClick={() => setMenuOpen((prev) => !prev)}
-            aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-            aria-expanded={menuOpen}
-            aria-controls="mobile-menu"
-            className="md:hidden p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors duration-150"
-          >
-            {menuOpen ? <XIcon /> : <MenuIcon />}
-          </button>
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+
+            {/* Hamburger button — mobile only */}
+            <button
+              type="button"
+              onClick={() => setMenuOpen((prev) => !prev)}
+              aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-menu"
+              className="md:hidden p-2 rounded-lg text-neutral-600 hover:bg-neutral-100 transition-colors duration-150"
+            >
+              {menuOpen ? <XIcon /> : <MenuIcon />}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -102,7 +107,7 @@ export default function Header() {
       {menuOpen && (
         <div
           id="mobile-menu"
-          className="md:hidden border-b border-neutral-200 bg-white"
+          className="md:hidden border-b border-neutral-200 bg-white dark:bg-navy-900"
         >
           {/* Primary links */}
           <nav aria-label="Mobile primary navigation">
@@ -112,7 +117,7 @@ export default function Header() {
                   <Link
                     href={href}
                     onClick={() => setMenuOpen(false)}
-                    className="flex items-center h-11 px-3 rounded-lg text-body-md font-medium text-neutral-800 hover:text-navy-700 hover:bg-silver-100 transition-colors duration-150"
+                    className="flex items-center h-11 px-3 rounded-lg text-body-md font-medium text-neutral-800 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-silver-100 transition-colors duration-150"
                   >
                     {label}
                   </Link>
@@ -133,7 +138,7 @@ export default function Header() {
                     target="_blank"
                     rel="noopener noreferrer"
                     onClick={() => setMenuOpen(false)}
-                    className="flex items-center h-10 px-3 rounded-lg text-body-sm text-neutral-600 hover:text-navy-700 hover:bg-silver-100 transition-colors duration-150"
+                    className="flex items-center h-10 px-3 rounded-lg text-body-sm text-neutral-600 hover:text-primary-600 dark:hover:text-primary-400 hover:bg-silver-100 transition-colors duration-150"
                   >
                     {label}
                   </Link>

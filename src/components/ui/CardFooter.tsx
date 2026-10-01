@@ -91,7 +91,7 @@ export default function CardFooter({ href, ageGroups, eventId, tmvpId }: Props) 
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold text-primary-600 hover:text-primary-700 hover:bg-primary-50 transition-colors duration-150"
+          className="flex-1 flex items-center justify-center gap-1.5 py-2 text-xs font-semibold text-primary-600 hover:text-primary-700 hover:bg-primary-50 dark:text-primary-400 dark:hover:text-primary-300 dark:hover:bg-primary-950 transition-colors duration-150"
         >
           Register
           <ChevronRightIcon />
@@ -112,13 +112,13 @@ export default function CardFooter({ href, ageGroups, eventId, tmvpId }: Props) 
                   onClick={() => selectAge(ag.label)}
                   className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded border text-xs transition-colors duration-150 ${
                     activeAge === ag.label
-                      ? 'border-navy-500 bg-navy-50 text-navy-700'
-                      : 'border-silver-200 bg-silver-50 text-navy-700 hover:border-navy-300 hover:bg-navy-50/40'
+                      ? 'border-navy-500 bg-navy-50 text-navy-700 dark:border-primary-500 dark:bg-navy-900 dark:text-primary-400'
+                      : 'border-silver-200 bg-silver-50 text-navy-700 hover:border-navy-300 hover:bg-navy-50/40 dark:text-neutral-100 dark:hover:border-primary-400 dark:hover:bg-navy-900/60'
                   }`}
                 >
                   <span className="font-semibold">{ag.label}</span>
                   {ag.teamCount !== null && (
-                    <span className={`font-medium ${activeAge === ag.label ? 'text-navy-500' : 'text-navy-400'}`}>
+                    <span className={`font-medium ${activeAge === ag.label ? 'text-neutral-500' : 'text-neutral-400'}`}>
                       ·{ag.teamCount}
                     </span>
                   )}

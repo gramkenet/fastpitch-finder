@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useFilterTransition } from './FilterTransition'
 
 interface Props {
   availableStates: string[]
@@ -41,7 +41,7 @@ export default function FilterSidebar({
   selectedZip,
   selectedDistance,
 }: Props) {
-  const router = useRouter()
+  const { isPending, navigate: navigateTo } = useFilterTransition()
   const [mobileOpen, setMobileOpen] = useState(false)
   const [zipInput, setZipInput] = useState(selectedZip)
   const [geoLoading, setGeoLoading] = useState(false)
@@ -97,7 +97,7 @@ export default function FilterSidebar({
   }
 
   function navigate(updates: FilterUpdate) {
-    router.push(buildUrl(updates))
+    navigateTo(buildUrl(updates))
   }
 
   const hasActiveFilters =
@@ -144,8 +144,8 @@ export default function FilterSidebar({
         {hasActiveFilters && (
           <button
             type="button"
-            onClick={() => router.push('/')}
-            className="text-xs text-navy-600 hover:text-navy-800 font-medium transition-colors duration-150 shrink-0"
+            onClick={() => navigateTo('/')}
+            className="text-xs text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300 font-medium transition-colors duration-150 shrink-0"
           >
             Clear all
           </button>
@@ -153,7 +153,7 @@ export default function FilterSidebar({
       </div>
 
       {/* Filter sections — collapsed on mobile by default, always open on lg+ */}
-      <div className={`flex-col gap-5 ${mobileOpen ? 'flex' : 'hidden lg:flex'}`}>
+      <div className={`flex-col gap-5 transition-opacity duration-150 ${mobileOpen ? 'flex' : 'hidden lg:flex'} ${isPending ? 'opacity-60' : ''}`}>
         {/* Sanction */}
         <FilterSection label="Sanction">
           <select
@@ -273,7 +273,7 @@ export default function FilterSidebar({
                   setGeoLoading(false)
                 }
               }}
-              className="shrink-0 w-10 flex items-center justify-center rounded-lg border border-neutral-300 bg-white text-neutral-500 hover:text-navy-700 hover:border-navy-500 transition-colors duration-150 disabled:opacity-50"
+              className="shrink-0 w-10 flex items-center justify-center rounded-lg border border-neutral-300 bg-white dark:bg-navy-800 text-neutral-500 hover:text-primary-600 hover:border-primary-500 dark:hover:text-primary-400 dark:hover:border-primary-400 transition-colors duration-150 disabled:opacity-50"
             >
               <LocationPinIcon />
             </button>

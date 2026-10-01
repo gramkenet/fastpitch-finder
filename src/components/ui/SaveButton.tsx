@@ -32,7 +32,7 @@ export default function SaveButton({ event }: { event: ScrapedEvent }) {
       aria-label={saved ? 'Remove from My Tournaments' : 'Save to My Tournaments'}
       className={`p-0.5 rounded transition-colors duration-150 ${
         saved
-          ? 'text-navy-700 hover:text-navy-900'
+          ? 'text-primary-600 hover:text-primary-800 dark:text-primary-400 dark:hover:text-primary-300'
           : 'text-neutral-300 hover:text-neutral-500'
       }`}
     >

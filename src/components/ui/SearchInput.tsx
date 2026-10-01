@@ -1,6 +1,6 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
+import { useFilterTransition } from './FilterTransition'
 
 interface Props {
   selectedSearch: string
@@ -9,7 +9,7 @@ interface Props {
 }
 
 export default function SearchInput({ selectedSearch, searchBase, className }: Props) {
-  const router = useRouter()
+  const { navigate: navigateTo } = useFilterTransition()
 
   function navigate(value: string) {
     const trimmed = value.trim()
@@ -19,7 +19,7 @@ export default function SearchInput({ selectedSearch, searchBase, className }: P
       const url = trimmed.length >= 4
         ? `${searchBase}${sep}search=${encodeURIComponent(trimmed)}`
         : searchBase
-      router.push(url)
+      navigateTo(url)
     }
   }
 

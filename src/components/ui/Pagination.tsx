@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { useFilterTransition } from './FilterTransition'
 
 interface Props {
   currentPage: number
@@ -14,15 +17,30 @@ function pageUrl(basePath: string, page: number) {
 }
 
 export default function Pagination({ currentPage, totalPages, basePath = '/' }: Props) {
+  const { navigate } = useFilterTransition()
+
   if (totalPages <= 1) return null
 
   const pages = buildPageList(currentPage, totalPages)
+
+  // Route plain left-clicks through the shared transition (for the pending
+  // skeleton) but let ctrl/cmd/middle-click fall through to normal <Link> behavior.
+  function handleClick(e: React.MouseEvent<HTMLAnchorElement>, href: string) {
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return
+    e.preventDefault()
+    navigate(href)
+  }
 
   return (
     <nav aria-label="Pagination" className="flex items-center justify-center gap-1 flex-wrap">
       {/* Prev */}
       {currentPage > 1 ? (
-        <Link href={pageUrl(basePath, currentPage - 1)} className="btn btn-ghost btn-sm" aria-label="Previous page">
+        <Link
+          href={pageUrl(basePath, currentPage - 1)}
+          onClick={(e) => handleClick(e, pageUrl(basePath, currentPage - 1))}
+          className="btn btn-ghost btn-sm"
+          aria-label="Previous page"
+        >
           <ChevronLeft />
         </Link>
       ) : (
@@ -39,6 +57,7 @@ export default function Pagination({ currentPage, totalPages, basePath = '/' }: 
           <Link
             key={p}
             href={pageUrl(basePath, p as number)}
+            onClick={(e) => handleClick(e, pageUrl(basePath, p as number))}
             aria-label={`Page ${p}`}
             aria-current={p === currentPage ? 'page' : undefined}
             className={
@@ -54,7 +73,12 @@ export default function Pagination({ currentPage, totalPages, basePath = '/' }: 
 
       {/* Next */}
       {currentPage < totalPages ? (
-        <Link href={pageUrl(basePath, currentPage + 1)} className="btn btn-ghost btn-sm" aria-label="Next page">
+        <Link
+          href={pageUrl(basePath, currentPage + 1)}
+          onClick={(e) => handleClick(e, pageUrl(basePath, currentPage + 1))}
+          className="btn btn-ghost btn-sm"
+          aria-label="Next page"
+        >
           <ChevronRight />
         </Link>
       ) : (

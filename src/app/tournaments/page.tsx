@@ -26,8 +26,8 @@ export default function TournamentsPage() {
   return (
     <div className="container-page section-gap">
       <header className="mb-8">
-        <p className="text-label-lg text-primary-600 mb-2">Saved Events</p>
-        <h1 className="text-display-md text-navy-800">My Tournaments</h1>
+        <p className="text-label-lg text-primary-600 dark:text-primary-400 mb-2">Saved Events</p>
+        <h1 className="text-display-md text-neutral-900">My Tournaments</h1>
         {mounted && events.length > 0 && (
           <p className="text-body-lg text-neutral-600 mt-3">
             {events.length} {events.length === 1 ? 'tournament' : 'tournaments'} saved
@@ -44,13 +44,19 @@ export default function TournamentsPage() {
           </p>
         </div>
       ) : (
-        <CardGrid columns={1}>
-          {events.map((event) => (
-            <EventCard key={event.id} event={event} />
+        <CardGrid columns={3}>
+          {sortByStartDateAscending(events).map((event) => (
+            <EventCard key={event.id} event={event} variant="column" />
           ))}
         </CardGrid>
       )}
     </div>
+  )
+}
+
+function sortByStartDateAscending(events: ScrapedEvent[]): ScrapedEvent[] {
+  return [...events].sort(
+    (a, b) => new Date(a.eventStartDate).getTime() - new Date(b.eventStartDate).getTime()
   )
 }
 

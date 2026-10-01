@@ -1,38 +1,40 @@
 @theme {
   /* ═══════════════════════════════════════════════════════
      BRAND PALETTE
-     Primary   → Gold        (softball + "Fastpitch" wordmark)
-     Secondary → Navy        (magnifying glass + "Finder" wordmark)
-     Tertiary  → Columbia Blue (light sky blue complement)
+     Primary   → Columbia Blue (deep)  — main interactive/brand color
+     Secondary → Black (charcoal)      — headings, dark panels, text
+     Neutral   → Silver (cool gray)    — UI chrome + page background
+     Accent    → Columbia Blue (bright) — reserved for org/sanction badges,
+                                           kept distinct from Primary
      ═══════════════════════════════════════════════════════ */
 
-  /* ── Primary: Gold ───────────────────────────────────── */
-  --color-primary-50:  #fffce8;
-  --color-primary-100: #fff8c4;
-  --color-primary-200: #ffee80;
-  --color-primary-300: #ffe040;
-  --color-primary-400: #f5b800;  /* ← bright display gold, logo match   */
-  --color-primary-500: #d99c00;  /* ← main interactive gold              */
-  --color-primary-600: #b47e00;  /* ← dark gold — readable on white      */
-  --color-primary-700: #8f6100;
-  --color-primary-800: #6b4800;
-  --color-primary-900: #4f3500;
-  --color-primary-950: #2e1e00;
+  /* ── Primary: Columbia Blue (deep) ───────────────────── */
+  --color-primary-50:  #eef6fc;
+  --color-primary-100: #d7ecf8;
+  --color-primary-200: #b0d8f0;
+  --color-primary-300: #82c0e6;
+  --color-primary-400: #52a4d8;  /* ← bright display blue                */
+  --color-primary-500: #2f86c2;  /* ← main interactive blue              */
+  --color-primary-600: #1f6da3;  /* ← dark blue — readable on white      */
+  --color-primary-700: #195785;
+  --color-primary-800: #144368;
+  --color-primary-900: #0f314c;
+  --color-primary-950: #081d2d;
 
-  /* ── Secondary: Navy ─────────────────────────────────── */
-  --color-navy-50:  #f0f4fb;
-  --color-navy-100: #d8e3f4;
-  --color-navy-200: #b5c8ea;
-  --color-navy-300: #84a4d8;
-  --color-navy-400: #537fc3;
-  --color-navy-500: #3360ad;
-  --color-navy-600: #254d90;
-  --color-navy-700: #1a3a72;  /* ← main navy — logo match               */
-  --color-navy-800: #132d58;
-  --color-navy-900: #0d1f3f;
-  --color-navy-950: #071428;
+  /* ── Secondary: Black (charcoal) ─────────────────────── */
+  --color-navy-50:  #f4f5f6;
+  --color-navy-100: #e6e8ea;
+  --color-navy-200: #ccd0d5;
+  --color-navy-300: #a8aeb6;
+  --color-navy-400: #7d848d;
+  --color-navy-500: #565d66;
+  --color-navy-600: #3d434b;
+  --color-navy-700: #262a30;  /* ← main brand black — headings, buttons */
+  --color-navy-800: #191c20;
+  --color-navy-900: #0f1114;
+  --color-navy-950: #060708;
 
-  /* ── Tertiary: Columbia Blue ─────────────────────────── */
+  /* ── Accent: Columbia Blue (bright) — org/sanction badges ── */
   --color-columbia-50:  #f0f9ff;
   --color-columbia-100: #ddf0fd;
   --color-columbia-200: #b9e0fb;
@@ -110,7 +112,7 @@
   --color-surface:         #ffffff;
   --color-surface-raised:  #fafaf9;
   --color-surface-overlay: #f1f5f9;  /* silver-100 — page background */
-  --color-surface-inverse: #1a3a72;  /* navy-700 — dark panels        */
+  --color-surface-inverse: #262a30;  /* navy-700 — dark panels        */
 
   /* ── Spacing ─────────────────────────────────────────── */
   --spacing: 0.25rem;
@@ -206,4 +208,55 @@
   --ease-in:         cubic-bezier(0.4, 0, 1, 1);
   --ease-out:        cubic-bezier(0, 0, 0.2, 1);
   --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ═══════════════════════════════════════════════════════
+   DARK MODE
+   Neutral and Silver are the theme-aware scales — invert them
+   wholesale (reverse the ramp) so every existing utility that
+   uses them (body text, borders, page/card chrome) adapts
+   automatically with no component changes.
+
+   Primary/Navy/Columbia stay fixed here on purpose: they're
+   used as literal decorative brand colors in places that must
+   look the same in both themes (hero banner, header bar, solid
+   buttons). Where navy/primary are used as *foreground text* on
+   a surface that goes dark, those specific call sites carry an
+   explicit `dark:` override instead — see components.
+
+   This block is intentionally plain (unlayered) CSS so it wins
+   over the `@theme`-generated `:root` values regardless of
+   selector specificity — unlayered rules always beat `@layer`
+   rules in the cascade.
+   ═══════════════════════════════════════════════════════ */
+.dark {
+  color-scheme: dark;
+
+  --color-neutral-50:  #0a0a0a;
+  --color-neutral-100: #171717;
+  --color-neutral-200: #262626;
+  --color-neutral-300: #404040;
+  --color-neutral-400: #525252;
+  --color-neutral-500: #737373;
+  --color-neutral-600: #a3a3a3;
+  --color-neutral-700: #d4d4d4;
+  --color-neutral-800: #e5e5e5;
+  --color-neutral-900: #f5f5f5;
+  --color-neutral-950: #fafafa;
+
+  --color-silver-50:  #020617;
+  --color-silver-100: #0f172a;
+  --color-silver-200: #1e293b;
+  --color-silver-300: #334155;
+  --color-silver-400: #475569;
+  --color-silver-500: #64748b;
+  --color-silver-600: #94a3b8;
+  --color-silver-700: #cbd5e1;
+  --color-silver-800: #e2e8f0;
+  --color-silver-900: #f1f5f9;
+  --color-silver-950: #f8fafc;
+
+  --color-surface:         #1b1f25;
+  --color-surface-raised:  #232830;
+  --color-surface-overlay: #0a0c0f;
 }

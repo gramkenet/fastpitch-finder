@@ -2,6 +2,9 @@
 @import "../styles/tokens.css";
 @import "../styles/utilities.css";
 
+/* Class-based dark mode — toggled via .dark on <html>, not prefers-color-scheme */
+@custom-variant dark (&:where(.dark, .dark *));
+
 /* ── Base ──────────────────────────────────────────────── */
 :root {
   color-scheme: light;
@@ -21,8 +24,18 @@ body {
   outline-offset: 2px;
 }
 
+.dark :focus-visible {
+  outline-color: var(--color-primary-400);
+}
+
 /* ── Selection ─────────────────────────────────────────── */
 ::selection {
   background-color: var(--color-navy-100);
   color: var(--color-navy-900);
+}
+
+/* ── Dark-mode input focus (navy-500/700 read too dark on a dark surface) ── */
+.dark .input:focus {
+  border-color: var(--color-primary-500);
+  box-shadow: 0 0 0 3px rgb(82 164 216 / 0.2);
 }

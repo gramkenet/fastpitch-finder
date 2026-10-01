@@ -5,6 +5,9 @@ import FilterSidebar from './FilterSidebar'
 import CardGrid from './CardGrid'
 import EventCard from './EventCard'
 import Pagination from './Pagination'
+import { FilterTransitionProvider } from './FilterTransition'
+import PendingResults from './PendingResults'
+import EventResultsSkeleton from './EventResultsSkeleton'
 
 interface Props {
   events: ScrapedEvent[]
@@ -58,7 +61,7 @@ export default function EventsExplorer({
   const paginationBase = paginationParams.toString() ? `/?${paginationParams}` : '/'
 
   return (
-    <>
+    <FilterTransitionProvider>
       <HomeHero
         filteredCount={totalCount}
         hasActiveFilters={hasActiveFilters}
@@ -85,41 +88,43 @@ export default function EventsExplorer({
           </aside>
 
           <section className="min-w-0">
-            {!hasActiveFilters ? (
-              <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
-                <p className="text-body-lg text-neutral-500">
-                  Use the filters to find upcoming tournaments.
+            <PendingResults skeleton={<EventResultsSkeleton />}>
+              {!hasActiveFilters ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center gap-3">
+                  <p className="text-body-lg text-neutral-500">
+                    Use the filters to find upcoming tournaments.
+                  </p>
+                  <p className="text-body-sm text-neutral-400">
+                    Filter by state, sanction, age division, date range, or search by name.
+                  </p>
+                </div>
+              ) : events.length === 0 ? (
+                <p className="text-body-lg text-neutral-500 py-16 text-center">
+                  No events match your filters.
                 </p>
-                <p className="text-body-sm text-neutral-400">
-                  Filter by state, sanction, age division, date range, or search by name.
-                </p>
-              </div>
-            ) : events.length === 0 ? (
-              <p className="text-body-lg text-neutral-500 py-16 text-center">
-                No events match your filters.
-              </p>
-            ) : (
-              <>
-                <CardGrid columns={1}>
-                  {events.map((event) => (
-                    <EventCard key={event.id} event={event} />
-                  ))}
-                </CardGrid>
+              ) : (
+                <>
+                  <CardGrid columns={2}>
+                    {events.map((event) => (
+                      <EventCard key={event.id} event={event} variant="column" />
+                    ))}
+                  </CardGrid>
 
-                {totalPages > 1 && (
-                  <div className="mt-12">
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      basePath={paginationBase}
-                    />
-                  </div>
-                )}
-              </>
-            )}
+                  {totalPages > 1 && (
+                    <div className="mt-12">
+                      <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        basePath={paginationBase}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
+            </PendingResults>
           </section>
         </div>
       </div>
-    </>
+    </FilterTransitionProvider>
   )
 }

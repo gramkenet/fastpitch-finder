@@ -80,7 +80,7 @@ const SANCTION_LABEL: Record<string, string> = {
   'USA Softball': 'USA SB',
 }
 
-export default function EventCard({ event }: { event: ScrapedEvent }) {
+export default function EventCard({ event, variant = 'row' }: { event: ScrapedEvent; variant?: 'row' | 'column' }) {
   const dateRange = formatDateRange(event.eventStartDate, event.eventEndDate)
   const location = [event.venueName, event.city, event.state].filter(Boolean).join(', ')
   const feeStr = formatEntryFee(event.entryFee)
@@ -104,50 +104,43 @@ export default function EventCard({ event }: { event: ScrapedEvent }) {
         </span>
       )}
 
-      {/* Main content row: logo strip + details */}
-      <div className="flex flex-row gap-4">
-        {/* Logo strip */}
-        <div className="w-16 self-stretch shrink-0 bg-white flex flex-col items-center gap-1 pt-10">
-          <EventLogo logoUrl={event.logoUrl} sanction={event.sanction} />
-        </div>
-
-        {/* Details column */}
-        <div className="flex flex-col gap-2 flex-1 min-w-0 py-4 pr-4">
-          {/* Header: badges top-right on mobile (own line), inline with date on desktop */}
-          <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-2 lg:gap-2">
-            <div className="flex items-center gap-1.5 flex-wrap justify-end order-first lg:order-last shrink-0">
-              {event.teamCount !== null && event.teamCount > 0 && (
-                <span className="badge badge-neutral">{event.teamCount} teams</span>
-              )}
-              {ageRange && (
-                <span className="badge badge-neutral">{ageRange}</span>
-              )}
-              {event.statureName && (
-                <span className="badge badge-primary">{event.statureName}</span>
-              )}
-              <SaveButton event={event} />
+      {variant === 'column' ? (
+        <div className="flex flex-col gap-3 p-4 pt-10 flex-1">
+          {/* Logo + save */}
+          <div className="flex items-start justify-between gap-2">
+            <div className="w-12 h-12 shrink-0 bg-white flex flex-col items-center justify-center gap-1">
+              <EventLogo logoUrl={event.logoUrl} sanction={event.sanction} />
             </div>
-            <span className="text-label-sm text-primary-600 order-last lg:order-first">{dateRange}</span>
+            <SaveButton event={event} />
           </div>
 
-          {/* Title + entry fee */}
-          <div className="flex items-baseline justify-between gap-3">
-            <h3 className="text-heading-sm text-neutral-900 leading-snug flex-1 min-w-0">
+          {/* Date + title */}
+          <div>
+            <span className="text-label-sm text-primary-600 dark:text-primary-400">{dateRange}</span>
+            <h3 className="text-heading-sm text-neutral-900 leading-snug mt-1">
               <Link
                 href={event.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="hover:text-navy-700 transition-colors duration-150"
+                className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-150"
               >
                 {event.name}
               </Link>
             </h3>
-            {feeStr && (
-              <span className="text-body-sm font-medium text-neutral-700 shrink-0 whitespace-nowrap">
-                {feeStr}
-              </span>
-            )}
           </div>
+
+          {/* Badges */}
+          {(event.teamCount || ageRange || event.statureName) && (
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {event.teamCount !== null && event.teamCount > 0 && (
+                <span className="badge badge-neutral">{event.teamCount} teams</span>
+              )}
+              {ageRange && <span className="badge badge-neutral">{ageRange}</span>}
+              {event.statureName && (
+                <span className="badge badge-primary">{event.statureName}</span>
+              )}
+            </div>
+          )}
 
           {/* Registration deadline */}
           {event.registrationDeadline && (
@@ -158,26 +151,102 @@ export default function EventCard({ event }: { event: ScrapedEvent }) {
 
           {/* Location + director */}
           {(location || event.directorName) && (
-            <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 text-body-sm text-neutral-500 mt-auto">
+            <div className="flex flex-col gap-1 text-body-sm text-neutral-500 mt-auto">
               {location && (
                 <span className="flex items-center gap-1">
                   <LocationIcon className="shrink-0" />
-                  {location}
+                  <span className="truncate">{location}</span>
                 </span>
-              )}
-              {location && event.directorName && (
-                <span className="hidden lg:inline text-neutral-300 select-none" aria-hidden="true">·</span>
               )}
               {event.directorName && (
                 <span className="flex items-center gap-1">
                   <PersonIcon className="shrink-0" />
-                  {event.directorName}
+                  <span className="truncate">{event.directorName}</span>
                 </span>
               )}
             </div>
           )}
+
+          {feeStr && (
+            <span className="text-body-sm font-medium text-neutral-700">{feeStr}</span>
+          )}
         </div>
-      </div>
+      ) : (
+        /* Main content row: logo strip + details */
+        <div className="flex flex-row gap-4">
+          {/* Logo strip */}
+          <div className="w-16 self-stretch shrink-0 bg-white flex flex-col items-center gap-1 pt-10">
+            <EventLogo logoUrl={event.logoUrl} sanction={event.sanction} />
+          </div>
+
+          {/* Details column */}
+          <div className="flex flex-col gap-2 flex-1 min-w-0 py-4 pr-4">
+            {/* Header: badges top-right on mobile (own line), inline with date on desktop */}
+            <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-2 lg:gap-2">
+              <div className="flex items-center gap-1.5 flex-wrap justify-end order-first lg:order-last shrink-0">
+                {event.teamCount !== null && event.teamCount > 0 && (
+                  <span className="badge badge-neutral">{event.teamCount} teams</span>
+                )}
+                {ageRange && (
+                  <span className="badge badge-neutral">{ageRange}</span>
+                )}
+                {event.statureName && (
+                  <span className="badge badge-primary">{event.statureName}</span>
+                )}
+                <SaveButton event={event} />
+              </div>
+              <span className="text-label-sm text-primary-600 dark:text-primary-400 order-last lg:order-first">{dateRange}</span>
+            </div>
+
+            {/* Title + entry fee */}
+            <div className="flex items-baseline justify-between gap-3">
+              <h3 className="text-heading-sm text-neutral-900 leading-snug flex-1 min-w-0">
+                <Link
+                  href={event.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="hover:text-primary-600 dark:hover:text-primary-400 transition-colors duration-150"
+                >
+                  {event.name}
+                </Link>
+              </h3>
+              {feeStr && (
+                <span className="text-body-sm font-medium text-neutral-700 shrink-0 whitespace-nowrap">
+                  {feeStr}
+                </span>
+              )}
+            </div>
+
+            {/* Registration deadline */}
+            {event.registrationDeadline && (
+              <p className="text-body-sm text-neutral-500">
+                Reg. by {formatDeadline(event.registrationDeadline)}
+              </p>
+            )}
+
+            {/* Location + director */}
+            {(location || event.directorName) && (
+              <div className="flex flex-col lg:flex-row lg:items-center gap-1 lg:gap-2 text-body-sm text-neutral-500 mt-auto">
+                {location && (
+                  <span className="flex items-center gap-1">
+                    <LocationIcon className="shrink-0" />
+                    {location}
+                  </span>
+                )}
+                {location && event.directorName && (
+                  <span className="hidden lg:inline text-neutral-300 select-none" aria-hidden="true">·</span>
+                )}
+                {event.directorName && (
+                  <span className="flex items-center gap-1">
+                    <PersonIcon className="shrink-0" />
+                    {event.directorName}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Full-width View details section */}
       {canExpand && (
